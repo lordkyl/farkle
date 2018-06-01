@@ -1,0 +1,29 @@
+{
+  "name": "farkle-game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://charlestrout@bitbucket.org/charlestrout/farkle-game.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/charlestrout/farkle-game#readme",
+  "dependencies": {
+    "@types/createjs": "0.0.29",
+    "createjs": "^1.0.1",
+    "exports-loader": "^0.7.0",
+    "imports-loader": "^0.8.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^4.3.0",
+    "typescript": "^2.8.4",
+    "webpack": "~4.10.2",
+    "webpack-cli": "^2.1.4",
+    "webpack-serve": "^1.0.2"
+  }
+}
