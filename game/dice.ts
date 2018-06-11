@@ -1,7 +1,10 @@
-const gridSize = 50;
-const dieSize = 100;
+interface GameDie {
+    score: number;
+    container: createjs.Container;
+    cube: createjs.Shape;
+    pips: createjs.Shape[];
+}
 
-//coordinates of each die
 const diePositions = [
     {x: 50, y: 50},
     {x: 200, y: 50},
@@ -10,6 +13,9 @@ const diePositions = [
     {x: 200, y: 200},
     {x: 350, y: 200}
 ];
+
+const gridSize = 50;
+const dieSize = 100;
 
 //coordinates of each pip
 var pipPositions = [
@@ -27,26 +33,36 @@ function pips(...indexes: number[]): createjs.Shape[] {
     return indexes.map(i => drawPip(pipPositions[i].x, pipPositions[i].y));
 }
 
-//draw a single die
-export function drawDie(x: number, y: number, score: number): createjs.Container {
-    var result = new createjs.Container();
-    result.x = x;
-    result.y = y;
-    
-    result.addChild(drawCube(0,0));
-    drawScore(score).forEach(p=>result.addChild(p));
+export function CreateGameDie(score:number): GameDie {
+    var container = new createjs.Container();
+    container.regX = dieSize / 2;
+    container.regY = dieSize / 2;
 
-    return result;
+    container.x = dieSize * -1;
+    container.y = dieSize * -1;
+    
+    var cube = drawCube(0,0); 
+    var pips = drawScore(score);
+
+    container.addChild(drawCube(0,0));
+    pips.forEach(p => container.addChild(p));
+    
+    return {
+        score: score,
+        container: container,
+        cube: cube,
+        pips: pips
+    };
 }
 
 //draw all diece
-export function drawDice(): createjs.Container[]
+export function drawDice(): GameDie[]
 {
     //randomize die values
     var scores = Array.from(randomDice(diePositions.length));
 
     //create random die in each position
-    return scores.map((score,i) => drawDie(diePositions[i].x, diePositions[i].y, score));
+    return scores.map((score,i) => CreateGameDie(score));
 }
 
 //generate some random dice values
@@ -71,6 +87,23 @@ function drawScore(score: number): createjs.Shape[]
     }
 }
 
+
+export function cubeStandard(g: createjs.Graphics) {
+    return g.clear()
+        .setStrokeStyle(1)
+        .beginStroke("#000000")
+        .beginFill("red")
+        .drawRoundRect(0, 0, dieSize, dieSize, 5);
+}
+
+export function cubeSelected(g: createjs.Graphics) {
+    return g.clear()
+        .setStrokeStyle(3)
+        .beginStroke("#000000")
+        .beginFill("red")
+        .drawRoundRect(0, 0, dieSize, dieSize, 8);
+}
+
 //draw a pip
 function drawPip(x: number, y: number): createjs.Shape {
     var g = new createjs.Graphics();
@@ -89,11 +122,11 @@ function drawPip(x: number, y: number): createjs.Shape {
 //draw a die cube
 function drawCube(x: number, y: number) {
    
-    var g = new createjs.Graphics();
-    g.setStrokeStyle(1);
-    g.beginStroke("#000000");
-    g.beginFill("red");
-    g.drawRoundRect(0, 0, dieSize, dieSize, 5);
+    var g = cubeStandard(new createjs.Graphics());
+    // g.setStrokeStyle(1);
+    // g.beginStroke("#000000");
+    // g.beginFill("red");
+    // g.drawRoundRect(0, 0, dieSize, dieSize, 5);
 
     var x = Math.floor(x / gridSize) * gridSize;
     var y = Math.floor(y / gridSize) * gridSize;
