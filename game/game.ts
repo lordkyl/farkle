@@ -1,5 +1,5 @@
 /// <reference path="../node_modules/@types/easeljs/index.d.ts" />
-import { drawDice, cubeSelected, cubeStandard } from './dice';
+import { GameDie, drawDice, toggleSelected } from './dice';
 
 var canvas: HTMLCanvasElement;
 var stage: createjs.Stage;
@@ -9,6 +9,7 @@ function load(elementId: string)
     canvas = <HTMLCanvasElement>document.getElementById(elementId);
     stage = new createjs.Stage(canvas);
     stage.enableMouseOver(10);
+    createjs.Ticker.addEventListener("tick", stage);        
     intro();
 }
 
@@ -42,13 +43,17 @@ function start(){
         .to({alpha:0}, 300, createjs.Ease.getPowOut(2))
         .call(myturn);
 
-    createjs.Ticker.setFPS(60);
-    createjs.Ticker.addEventListener("tick", stage);        
+    //createjs.Ticker.setFPS(60);
     
     //stage.removeAllChildren();
 
     //myturn();
     //stage.update();
+}
+
+function rolloverout(die: GameDie){
+    toggleSelected(die);
+    stage.update();
 }
 
 function myturn(){
@@ -69,12 +74,8 @@ function myturn(){
     ];
 
     dice.forEach((d,i) => {
-        d.container.on('rollover', ()=>{
-            cubeSelected(d.cube.graphics);
-            stage.update();
-        });
-        d.container.on('rollout', ()=>cubeStandard(d.cube.graphics));
-
+        d.container.on('rollover', ()=>rolloverout(d));
+        d.container.on('rollout', ()=>rolloverout(d));
         d.container.x = i * 100;
         d.container.y = i * 100;
         //createjs.Tween.get(d.container)

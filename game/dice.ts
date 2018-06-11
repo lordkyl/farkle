@@ -1,18 +1,18 @@
-interface GameDie {
+export interface GameDie {
     score: number;
     container: createjs.Container;
-    cube: createjs.Shape;
+    cubes: createjs.Shape[]; 
     pips: createjs.Shape[];
 }
 
-const diePositions = [
-    {x: 50, y: 50},
-    {x: 200, y: 50},
-    {x: 350, y: 50},
-    {x: 50, y: 200},
-    {x: 200, y: 200},
-    {x: 350, y: 200}
-];
+// const diePositions = [
+//     {x: 50, y: 50},
+//     {x: 200, y: 50},
+//     {x: 350, y: 50},
+//     {x: 50, y: 200},
+//     {x: 200, y: 200},
+//     {x: 350, y: 200}
+// ];
 
 const gridSize = 50;
 const dieSize = 100;
@@ -33,7 +33,11 @@ function pips(...indexes: number[]): createjs.Shape[] {
     return indexes.map(i => drawPip(pipPositions[i].x, pipPositions[i].y));
 }
 
-export function CreateGameDie(score:number): GameDie {
+export function toggleSelected(die: GameDie){
+    die.cubes.forEach(c => c.visible = !c.visible);
+}
+
+export function createGameDie(score:number): GameDie {
     var container = new createjs.Container();
     container.regX = dieSize / 2;
     container.regY = dieSize / 2;
@@ -41,28 +45,30 @@ export function CreateGameDie(score:number): GameDie {
     container.x = dieSize * -1;
     container.y = dieSize * -1;
     
-    var cube = drawCube(0,0); 
     var pips = drawScore(score);
 
-    container.addChild(drawCube(0,0));
     pips.forEach(p => container.addChild(p));
     
-    return {
+    var result = {
         score: score,
         container: container,
-        cube: cube,
+        cubes: [drawCube(StandardCubeStyle), drawCube(SelectedCubeStyle, false)],
         pips: pips
     };
+
+    [...result.cubes, ...result.pips].forEach(p=>container.addChild(p));
+
+    return result;
 }
 
 //draw all diece
 export function drawDice(): GameDie[]
 {
     //randomize die values
-    var scores = Array.from(randomDice(diePositions.length));
+    var scores = Array.from(randomDice(6));
 
     //create random die in each position
-    return scores.map((score,i) => CreateGameDie(score));
+    return scores.map((score,i) => createGameDie(score));
 }
 
 //generate some random dice values
@@ -88,20 +94,37 @@ function drawScore(score: number): createjs.Shape[]
 }
 
 
-export function cubeStandard(g: createjs.Graphics) {
-    return g.clear()
-        .setStrokeStyle(1)
-        .beginStroke("#000000")
-        .beginFill("red")
-        .drawRoundRect(0, 0, dieSize, dieSize, 5);
+interface GameCubeStyle {
+    strokeWidth: number;
+    strokeColor: string;
+    fillColor: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    radius: number;
 }
 
-export function cubeSelected(g: createjs.Graphics) {
-    return g.clear()
-        .setStrokeStyle(3)
-        .beginStroke("#000000")
-        .beginFill("red")
-        .drawRoundRect(0, 0, dieSize, dieSize, 8);
+const StandardCubeStyle : GameCubeStyle = {
+    strokeWidth: 1,
+    strokeColor: "#000000",
+    fillColor: "red",
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    radius: 5
+}
+
+const SelectedCubeStyle : GameCubeStyle = {
+    strokeWidth: 3,
+    strokeColor: "#000000",
+    fillColor: "red",
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    radius: 8
 }
 
 //draw a pip
@@ -120,22 +143,21 @@ function drawPip(x: number, y: number): createjs.Shape {
 }
 
 //draw a die cube
-function drawCube(x: number, y: number) {
+function drawCube(style: GameCubeStyle, visible: boolean = true) {
    
-    var g = cubeStandard(new createjs.Graphics());
-    // g.setStrokeStyle(1);
-    // g.beginStroke("#000000");
-    // g.beginFill("red");
-    // g.drawRoundRect(0, 0, dieSize, dieSize, 5);
+    var g = new createjs.Graphics();
+    g.setStrokeStyle(style.strokeWidth);
+    g.beginStroke(style.strokeColor);
+    g.beginFill(style.fillColor);
+    g.drawRoundRect(0,0, style.width, style.height, style.radius);
 
     var x = Math.floor(x / gridSize) * gridSize;
     var y = Math.floor(y / gridSize) * gridSize;
 
     var shape = new createjs.Shape(g);
-    shape.x = x;
-    shape.y = y;
-
-    
+    shape.x = 0;
+    shape.y = 0;
+    shape.visible = visible;
 
     return shape;
 }
