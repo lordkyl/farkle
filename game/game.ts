@@ -34,6 +34,11 @@ function intro(){
     ui.intro.message.y = canvas.height / 2;
     stage.addChild(ui.intro.message);
 
+    createjs.Tween.get(ui.intro.message, { loop: 500})
+        .wait(2000)
+        .to({scale: 1.2}, 300, createjs.Ease.getPowInOut(2))
+        .to({scale: 1}, 300, createjs.Ease.getPowInOut(2));
+
     ui.intro.event = stage.on('stagemouseup', start);
     stage.update();
 }
