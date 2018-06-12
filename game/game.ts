@@ -9,6 +9,7 @@ function load(elementId: string)
     canvas = <HTMLCanvasElement>document.getElementById(elementId);
     stage = new createjs.Stage(canvas);
     stage.enableMouseOver(10);
+    createjs.Ticker.framerate = 60;
     createjs.Ticker.addEventListener("tick", stage);        
     intro();
 }
@@ -43,12 +44,6 @@ function start(){
         .to({alpha:0}, 300, createjs.Ease.getPowOut(2))
         .call(myturn);
 
-    //createjs.Ticker.setFPS(60);
-    
-    //stage.removeAllChildren();
-
-    //myturn();
-    //stage.update();
 }
 
 function rolloverout(die: GameDie){
@@ -56,11 +51,29 @@ function rolloverout(die: GameDie){
     stage.update();
 }
 
+var selected: GameDie[] = [];
+
+function selectDie(die: GameDie){
+
+    selected.push(die);
+
+    let x = (selected.length-1) * 60 + 20;
+    createjs.Tween.get(die.container)
+        .to({scale:1.2}, 200, createjs.Ease.getPowIn(2))
+        .to({x:x, y:300, scale:0.5}, 500, createjs.Ease.getPowOut(2));
+}
+
 function myturn(){
     stage.removeAllChildren();
 
     var dice = drawDice();
-    dice.forEach(d => stage.addChild(d.container));
+    var table = new createjs.Container();
+    table.x = 20;
+    table.y = 20;
+
+    dice.forEach(d => table.addChild(d.container));
+
+    stage.addChild(table);
 
     //stage.addChild(dice[0]);
 
@@ -76,10 +89,11 @@ function myturn(){
     dice.forEach((d,i) => {
         d.container.on('rollover', ()=>rolloverout(d));
         d.container.on('rollout', ()=>rolloverout(d));
-        d.container.x = i * 100;
-        d.container.y = i * 100;
-        //createjs.Tween.get(d.container)
-            //.to({x: pos[i].x, y:pos[i].y, rotation:360}, 1000, createjs.Ease.getPowIn(2));
+        d.container.on('click', ()=>selectDie(d));
+        d.container.x = -100;
+        d.container.y = -100;
+        createjs.Tween.get(d.container)
+            .to({x: pos[i].x, y:pos[i].y, rotation:360}, 600, createjs.Ease.getPowIn(2));
     })
 
 }

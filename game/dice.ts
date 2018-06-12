@@ -1,3 +1,7 @@
+const gridSize = 50;
+const dieSize = 100;
+
+
 export interface GameDie {
     score: number;
     container: createjs.Container;
@@ -5,17 +9,6 @@ export interface GameDie {
     pips: createjs.Shape[];
 }
 
-// const diePositions = [
-//     {x: 50, y: 50},
-//     {x: 200, y: 50},
-//     {x: 350, y: 50},
-//     {x: 50, y: 200},
-//     {x: 200, y: 200},
-//     {x: 350, y: 200}
-// ];
-
-const gridSize = 50;
-const dieSize = 100;
 
 //coordinates of each pip
 var pipPositions = [
