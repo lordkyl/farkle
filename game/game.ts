@@ -25,9 +25,10 @@ function intro(){
     //cleanup stage
     stage.removeAllChildren();
 
-    ui.intro.message = new createjs.Text("Insert Coin", "bold 24px Arial", "#333333");
+    ui.intro.message = new createjs.Text("Click to Start!", "bold 24px Arial", "#ffffff");
 	ui.intro.message.maxWidth = 640;
-	ui.intro.message.textAlign = "center";
+    ui.intro.message.textAlign = "center";
+    ui.intro.message.shadow = new createjs.Shadow("#000000", 5, 5, 10);
 	ui.intro.message.textBaseline = "middle";
 	ui.intro.message.x = canvas.width / 2;
     ui.intro.message.y = canvas.height / 2;
@@ -60,33 +61,28 @@ function selectDie(die: GameDie){
     let x = (selected.length-1) * 60 + 20;
     createjs.Tween.get(die.container)
         .to({scale:1.2}, 200, createjs.Ease.getPowIn(2))
-        .to({x:x, y:300, scale:0.5}, 500, createjs.Ease.getPowOut(2));
+        .to({x:x, y:0, scale:0.5}, 500, createjs.Ease.getPowOut(2));
 }
+
+const pos = [
+    {x: 50, y: 200},
+    {x: 200, y: 200},
+    {x: 350, y: 200},
+    {x: 50, y: 350},
+    {x: 200, y: 350},
+    {x: 350, y: 350}
+];
 
 function myturn(){
     stage.removeAllChildren();
 
     var dice = drawDice();
     var table = new createjs.Container();
-    table.x = 20;
-    table.y = 20;
-
-    dice.forEach(d => table.addChild(d.container));
-
-    stage.addChild(table);
-
-    //stage.addChild(dice[0]);
-
-    const pos = [
-        {x: 50, y: 50},
-        {x: 200, y: 50},
-        {x: 350, y: 50},
-        {x: 50, y: 200},
-        {x: 200, y: 200},
-        {x: 350, y: 200}
-    ];
+    table.x = 120;
+    table.y = 40;
 
     dice.forEach((d,i) => {
+        table.addChild(d.container)        
         d.container.on('rollover', ()=>rolloverout(d));
         d.container.on('rollout', ()=>rolloverout(d));
         d.container.on('click', ()=>selectDie(d));
@@ -96,8 +92,7 @@ function myturn(){
             .to({x: pos[i].x, y:pos[i].y, rotation:360}, 600, createjs.Ease.getPowIn(2));
     })
 
+    stage.addChild(table);
 }
 
-
-
-window.onload = () => load('testCanvas');
+window.onload = () => load('game-canvas');

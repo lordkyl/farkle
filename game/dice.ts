@@ -143,7 +143,6 @@ function drawCube(style: GameCubeStyle, visible: boolean = true) {
     g.beginStroke(style.strokeColor);
     g.beginFill(style.fillColor);
     g.drawRoundRect(0,0, style.width, style.height, style.radius);
-
     var x = Math.floor(x / gridSize) * gridSize;
     var y = Math.floor(y / gridSize) * gridSize;
 
@@ -151,6 +150,7 @@ function drawCube(style: GameCubeStyle, visible: boolean = true) {
     shape.x = 0;
     shape.y = 0;
     shape.visible = visible;
+    shape.shadow = new createjs.Shadow("#000000", 0, 0, 20);
 
     return shape;
 }
