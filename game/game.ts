@@ -19,6 +19,10 @@ var ui = {
     intro: {
         message: null,
         event: null
+    },
+    buttons: {
+        roll: null,
+        score: null
     }
 };
 
@@ -112,14 +116,13 @@ function handleFileComplete(evt) {
     });    
 }
 
-
 var shakeSound: createjs.AbstractSoundInstance;
 var rollSound: createjs.AbstractSoundInstance;
 
 function shuffle(){
     stage.removeAllChildren();
 
-    shakeSound.stop();
+    if (shakeSound) shakeSound.stop();
     rollSound = createjs.Sound.play('throw-sound', {delay:100});
 
     var dice = drawDice();
@@ -140,21 +143,19 @@ function shuffle(){
 
     stage.addChild(table);
 
-    var bitmapButton = new createjs.Sprite(spriteSheet, 'roll_out');
-    stage.addChild(bitmapButton).set({x: 20, y: 370});
-    var bitmapHelper = new createjs.ButtonHelper(bitmapButton, 'roll_out', 'roll_over', 'roll_down');    
-    bitmapButton.addEventListener('click', () => {
+    ui.buttons.roll = new createjs.Sprite(spriteSheet, 'roll_out');
+    stage.addChild(ui.buttons.roll).set({x: 20, y: 370, visible: false});
+    var bitmapHelper = new createjs.ButtonHelper(ui.buttons.roll, 'roll_out', 'roll_over', 'roll_down');    
+    ui.buttons.roll.addEventListener('click', () => {
         createjs.Sound.play("click-sound");
-    })
+    });
 
-    var bitmapButton2 = new createjs.Sprite(spriteSheet, 'pass_out');
-    stage.addChild(bitmapButton2).set({x: 610, y: 370});
-    var bitmapHelper2 = new createjs.ButtonHelper(bitmapButton2, 'pass_out', 'pass_over', 'pass_down');    
-    bitmapButton2.addEventListener('click', () => {
-        console.log('click');
+    ui.buttons.score = new createjs.Sprite(spriteSheet, 'pass_out');
+    stage.addChild(ui.buttons.score).set({x: 610, y: 370, visible: false});
+    var bitmapHelper2 = new createjs.ButtonHelper(ui.buttons.score, 'pass_out', 'pass_over', 'pass_down');    
+    ui.buttons.score.addEventListener('click', () => {
         createjs.Sound.play("click-sound");
-    })
-
+    });
 
 }
 
