@@ -24,7 +24,7 @@ var ui = {
 
 function intro(){
     //cleanup stage
-    stage.removeAllChildren();
+    //stage.removeAllChildren();
 
     ui.intro.message = new createjs.Text("Click to Start!", "bold 24px Arial", "#ffffff");
 	ui.intro.message.maxWidth = 640;
@@ -41,9 +41,11 @@ function intro(){
         .to({scale: 1}, 300, createjs.Ease.getPowInOut(2));
 
     ui.intro.event = stage.on('stagemouseup', start);
+
+    loadAssets();
+
     stage.update();
 
-    loadImage();
 }
 
 function start(){
@@ -65,7 +67,7 @@ var selected: GameDie[] = [];
 function selectDie(die: GameDie){
     toggleSelected(die);
     stage.update();
-    
+
     selected.push(die);
 
     let x = (selected.length-1) * 60 + 20;
@@ -83,22 +85,46 @@ const pos = [
     {x: 350, y: 350}
 ];
 
-function loadImage() {
-    var preload = new createjs.LoadQueue();
-    preload.addEventListener("fileload", handleFileComplete);
-    preload.loadFile("design/dice-cup.png");
+var loadQueue :createjs.LoadQueue;
+function loadAssets() {
+    loadQueue = new createjs.LoadQueue();
+    loadQueue.installPlugin(createjs.Sound);
+    loadQueue.addEventListener("complete", handleFileComplete);
+    loadQueue.loadManifest([
+        {id: "cup-sprite", src: "design/assets/dice-cup.png"},
+        {id: "button-sprite", src: "design/assets/button-spritesheet.png"},
+        {id: "throw-sound", src: "sounds/throw.wav"},
+        {id: "shake-sound", src: "sounds/shake.wav"},
+        {id: "click-sound", src: "sounds/click.mp3"},
+    ]);
 }
 
-function handleFileComplete(event) {
-    //document.body.appendChild(event.result);
+var spriteSheet: createjs.SpriteSheet;
+
+function handleFileComplete(evt) {
+    spriteSheet = new createjs.SpriteSheet({
+        images: [loadQueue.getResult('button-sprite')],
+        frames: {width: 88, height: 88},
+        animations: { 
+            roll_out: 0, roll_over: 1, roll_down: 2,
+            pass_out: 3, pass_over: 4, pass_down: 5
+        }
+    });    
 }
+
+
+var shakeSound: createjs.AbstractSoundInstance;
+var rollSound: createjs.AbstractSoundInstance;
 
 function shuffle(){
     stage.removeAllChildren();
 
+    shakeSound.stop();
+    rollSound = createjs.Sound.play('throw-sound', {delay:100});
+
     var dice = drawDice();
     var table = new createjs.Container();
-    table.x = 120;
+    table.x = 160;
     table.y = 40;
 
     dice.forEach((d,i) => {
@@ -114,12 +140,30 @@ function shuffle(){
 
     stage.addChild(table);
 
+    var bitmapButton = new createjs.Sprite(spriteSheet, 'roll_out');
+    stage.addChild(bitmapButton).set({x: 20, y: 370});
+    var bitmapHelper = new createjs.ButtonHelper(bitmapButton, 'roll_out', 'roll_over', 'roll_down');    
+    bitmapButton.addEventListener('click', () => {
+        createjs.Sound.play("click-sound");
+    })
+
+    var bitmapButton2 = new createjs.Sprite(spriteSheet, 'pass_out');
+    stage.addChild(bitmapButton2).set({x: 610, y: 370});
+    var bitmapHelper2 = new createjs.ButtonHelper(bitmapButton2, 'pass_out', 'pass_over', 'pass_down');    
+    bitmapButton2.addEventListener('click', () => {
+        console.log('click');
+        createjs.Sound.play("click-sound");
+    })
+
+
 }
+
+
 
 function myturn(){
     stage.removeAllChildren();
 
-    var bitmap = new createjs.Bitmap("design/dice-cup.png");    
+    var bitmap = new createjs.Bitmap(loadQueue.getResult('cup-sprite'));
     bitmap.shadow = new createjs.Shadow("#000", 2,2,20);
     bitmap.regX = 90;
     bitmap.regY = 75;
@@ -143,7 +187,12 @@ function myturn(){
         }
 
         createjs.Tween.get(evt.target).to({x:evt.stageX + (angle / 2), rotation: angle}, 100);
+
+        if (shakeSound == null)
+            shakeSound = createjs.Sound.play('shake-sound', {loop: 100});
+    
     });
+
     bitmap.on('pressup', function(evt: createjs.MouseEvent) {
         createjs.Tween.get(evt.target)
             .to({x: -200, y: -200, rotation: 140}, 600)
