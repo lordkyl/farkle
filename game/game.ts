@@ -90,13 +90,35 @@ function handleFileComplete(event) {
     //document.body.appendChild(event.result);
 }
 
+function shuffle(){
+
+}
+
 function myturn(){
     stage.removeAllChildren();
 
 
     var bitmap = new createjs.Bitmap("design/dice-cup.png");    
     bitmap.shadow = new createjs.Shadow("#000", 2,2,20);
+    bitmap.regX = 90;
+    bitmap.regY = 75;
+    bitmap.x = 320;
+    bitmap.y = 200;
     stage.addChild(bitmap);
+
+    var angle = 0;
+    bitmap.on("pressmove", function(evt: createjs.MouseEvent) {
+        if (evt.stageX > evt.target.x && angle < 50) {
+            angle +=  ((evt.stageX - evt.target.x) / 15);
+        }else if (evt.stageX < evt.target.x && angle > -50) {
+            angle -=  ((evt.target.x - evt.stageX) / 15);
+        }
+
+        createjs.Tween.get(evt.target).to({scale:1.125, x:evt.stageX + angle, rotation: angle}, 40);
+        // evt.target.x = evt.stageX;
+        // evt.target.y = evt.stageY;
+    });    
+
     // var dice = drawDice();
     // var table = new createjs.Container();
     // table.x = 120;
