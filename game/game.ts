@@ -41,6 +41,8 @@ function intro(){
 
     ui.intro.event = stage.on('stagemouseup', start);
     stage.update();
+
+    loadImage();
 }
 
 function start(){
@@ -78,26 +80,40 @@ const pos = [
     {x: 350, y: 350}
 ];
 
+function loadImage() {
+    var preload = new createjs.LoadQueue();
+    preload.addEventListener("fileload", handleFileComplete);
+    preload.loadFile("design/dice-cup.png");
+}
+
+function handleFileComplete(event) {
+    //document.body.appendChild(event.result);
+}
+
 function myturn(){
     stage.removeAllChildren();
 
-    var dice = drawDice();
-    var table = new createjs.Container();
-    table.x = 120;
-    table.y = 40;
 
-    dice.forEach((d,i) => {
-        table.addChild(d.container)        
-        d.container.on('rollover', ()=>rolloverout(d));
-        d.container.on('rollout', ()=>rolloverout(d));
-        d.container.on('click', ()=>selectDie(d));
-        d.container.x = -100;
-        d.container.y = -100;
-        createjs.Tween.get(d.container)
-            .to({x: pos[i].x, y:pos[i].y, rotation:360}, 600, createjs.Ease.getPowIn(2));
-    })
+    var bitmap = new createjs.Bitmap("design/dice-cup.png");    
+    bitmap.shadow = new createjs.Shadow("#000", 2,2,20);
+    stage.addChild(bitmap);
+    // var dice = drawDice();
+    // var table = new createjs.Container();
+    // table.x = 120;
+    // table.y = 40;
 
-    stage.addChild(table);
+    // dice.forEach((d,i) => {
+    //     table.addChild(d.container)        
+    //     d.container.on('rollover', ()=>rolloverout(d));
+    //     d.container.on('rollout', ()=>rolloverout(d));
+    //     d.container.on('click', ()=>selectDie(d));
+    //     d.container.x = -100;
+    //     d.container.y = -100;
+    //     createjs.Tween.get(d.container)
+    //         .to({x: pos[i].x, y:pos[i].y, rotation:360}, 600, createjs.Ease.getPowIn(2));
+    // })
+
+    // stage.addChild(table);
 }
 
 window.onload = () => load('game-canvas');
