@@ -91,12 +91,30 @@ function handleFileComplete(event) {
 }
 
 function shuffle(){
+    stage.removeAllChildren();
+
+    var dice = drawDice();
+    var table = new createjs.Container();
+    table.x = 120;
+    table.y = 40;
+
+    dice.forEach((d,i) => {
+        table.addChild(d.container)        
+        d.container.on('rollover', ()=>rolloverout(d));
+        d.container.on('rollout', ()=>rolloverout(d));
+        d.container.on('click', ()=>selectDie(d));
+        d.container.x = -100;
+        d.container.y = -100;
+        createjs.Tween.get(d.container)
+            .to({x: pos[i].x, y:pos[i].y, rotation:360}, 400, createjs.Ease.getPowOut(2));
+    })
+
+    stage.addChild(table);
 
 }
 
 function myturn(){
     stage.removeAllChildren();
-
 
     var bitmap = new createjs.Bitmap("design/dice-cup.png");    
     bitmap.shadow = new createjs.Shadow("#000", 2,2,20);
@@ -107,6 +125,13 @@ function myturn(){
     stage.addChild(bitmap);
 
     var angle = 0;
+    bitmap.on('rollover', function(evt: createjs.MouseEvent){
+        createjs.Tween.get(evt.target).to({scale:1.075}, 67);
+    });
+    bitmap.on('rollout', function(evt: createjs.MouseEvent) {
+        if (evt.nativeEvent.buttons == 0)
+            createjs.Tween.get(evt.target).to({scale:1}, 67);
+    }); 
     bitmap.on("pressmove", function(evt: createjs.MouseEvent) {
         if (evt.stageX > evt.target.x && angle < 50) {
             angle +=  ((evt.stageX - evt.target.x) / 15);
@@ -114,28 +139,14 @@ function myturn(){
             angle -=  ((evt.target.x - evt.stageX) / 15);
         }
 
-        createjs.Tween.get(evt.target).to({scale:1.125, x:evt.stageX + angle, rotation: angle}, 40);
-        // evt.target.x = evt.stageX;
-        // evt.target.y = evt.stageY;
-    });    
+        createjs.Tween.get(evt.target).to({x:evt.stageX + (angle / 2), rotation: angle}, 100);
+    });
+    bitmap.on('pressup', function(evt: createjs.MouseEvent) {
+        createjs.Tween.get(evt.target)
+            .to({x: -200, y: -200, rotation: 140}, 600)
+            .call(()=>shuffle());
+    }); 
 
-    // var dice = drawDice();
-    // var table = new createjs.Container();
-    // table.x = 120;
-    // table.y = 40;
-
-    // dice.forEach((d,i) => {
-    //     table.addChild(d.container)        
-    //     d.container.on('rollover', ()=>rolloverout(d));
-    //     d.container.on('rollout', ()=>rolloverout(d));
-    //     d.container.on('click', ()=>selectDie(d));
-    //     d.container.x = -100;
-    //     d.container.y = -100;
-    //     createjs.Tween.get(d.container)
-    //         .to({x: pos[i].x, y:pos[i].y, rotation:360}, 600, createjs.Ease.getPowIn(2));
-    // })
-
-    // stage.addChild(table);
 }
 
 window.onload = () => load('game-canvas');
