@@ -150,7 +150,7 @@ function drawCube(style: GameCubeStyle, visible: boolean = true) {
     shape.x = 0;
     shape.y = 0;
     shape.visible = visible;
-    shape.shadow = new createjs.Shadow("#000000", 0, 0, 20);
+    shape.shadow = new createjs.Shadow("#000000", 0, 0, 10);
 
     return shape;
 }

@@ -9,6 +9,7 @@ function load(elementId: string)
     canvas = <HTMLCanvasElement>document.getElementById(elementId);
     stage = new createjs.Stage(canvas);
     stage.enableMouseOver(10);
+    createjs.Touch.enable(stage);
     createjs.Ticker.framerate = 60;
     createjs.Ticker.addEventListener("tick", stage);        
     intro();
@@ -62,7 +63,9 @@ function rolloverout(die: GameDie){
 var selected: GameDie[] = [];
 
 function selectDie(die: GameDie){
-
+    toggleSelected(die);
+    stage.update();
+    
     selected.push(die);
 
     let x = (selected.length-1) * 60 + 20;
