@@ -3,6 +3,23 @@ import { GameDie, drawDice, toggleSelected } from './dice';
 
 var canvas: HTMLCanvasElement;
 var stage: createjs.Stage;
+var loadQueue :createjs.LoadQueue;
+var spriteSheet: createjs.SpriteSheet;
+var shakeSound: createjs.AbstractSoundInstance;
+var rollSound: createjs.AbstractSoundInstance;
+var dice: GameDie[] = [];
+var selected = () => dice.filter(d=>d.selected);
+var table: createjs.Container = null;
+var ui = {
+    intro: {
+        message: null,
+        event: null
+    },
+    buttons: {
+        roll: null,
+        score: null
+    }
+};
 
 function load(elementId: string)
 {
@@ -15,21 +32,7 @@ function load(elementId: string)
     intro();
 }
 
-var ui = {
-    intro: {
-        message: null,
-        event: null
-    },
-    buttons: {
-        roll: null,
-        score: null
-    }
-};
-
 function intro(){
-    //cleanup stage
-    //stage.removeAllChildren();
-
     ui.intro.message = new createjs.Text("Click to Start!", "bold 24px Arial", "#ffffff");
 	ui.intro.message.maxWidth = 640;
     ui.intro.message.textAlign = "center";
@@ -49,7 +52,6 @@ function intro(){
     loadAssets();
 
     stage.update();
-
 }
 
 function start(){
@@ -66,18 +68,31 @@ function rolloverout(die: GameDie){
     stage.update();
 }
 
-var selected: GameDie[] = [];
-
 function selectDie(die: GameDie){
+    //count the number of existing selected dice
+    let count = selected().length;
+
+    //mark the die as selected
+    die.selected = true;
     toggleSelected(die);
     stage.update();
 
-    selected.push(die);
+    //calculted selected die positions
+    let rows = Math.floor(count / 7);
+    let y = rows * 60;
+    let x = (count - (rows*7)) * 60;
 
-    let x = (selected.length-1) * 60 + 20;
+    //animation to new position
     createjs.Tween.get(die.container)
         .to({scale:1.2}, 200, createjs.Ease.getPowIn(2))
-        .to({x:x, y:0, scale:0.5}, 500, createjs.Ease.getPowOut(2));
+        .to({x:x, y:y, scale:0.5}, 500, createjs.Ease.getPowOut(2));
+
+    //show the command buttons when selecting the first die
+    if (count === 0) {
+        createjs.Tween.get(ui.buttons.roll).to({alpha:1}, 400);
+        createjs.Tween.get(ui.buttons.score).to({alpha:1}, 400);
+    }
+    
 }
 
 const pos = [
@@ -89,7 +104,6 @@ const pos = [
     {x: 350, y: 350}
 ];
 
-var loadQueue :createjs.LoadQueue;
 function loadAssets() {
     loadQueue = new createjs.LoadQueue();
     loadQueue.installPlugin(createjs.Sound);
@@ -103,8 +117,6 @@ function loadAssets() {
     ]);
 }
 
-var spriteSheet: createjs.SpriteSheet;
-
 function handleFileComplete(evt) {
     spriteSheet = new createjs.SpriteSheet({
         images: [loadQueue.getResult('button-sprite')],
@@ -116,21 +128,15 @@ function handleFileComplete(evt) {
     });    
 }
 
-var shakeSound: createjs.AbstractSoundInstance;
-var rollSound: createjs.AbstractSoundInstance;
-
-function shuffle(){
-    stage.removeAllChildren();
+function roll(quantity: number = 6){
+    if (table === null) setupGameBoard();
 
     if (shakeSound) shakeSound.stop();
     rollSound = createjs.Sound.play('throw-sound', {delay:100});
 
-    var dice = drawDice();
-    var table = new createjs.Container();
-    table.x = 160;
-    table.y = 40;
+    var rolled = drawDice(quantity);
 
-    dice.forEach((d,i) => {
+    rolled.forEach((d,i) => {
         table.addChild(d.container)        
         d.container.on('rollover', ()=>rolloverout(d));
         d.container.on('rollout', ()=>rolloverout(d));
@@ -141,22 +147,49 @@ function shuffle(){
             .to({x: pos[i].x, y:pos[i].y, rotation:360}, 400, createjs.Ease.getPowOut(2));
     })
 
-    stage.addChild(table);
+    dice = [...dice, ...rolled];
+}
 
-    ui.buttons.roll = new createjs.Sprite(spriteSheet, 'roll_out');
-    stage.addChild(ui.buttons.roll).set({x: 20, y: 370, visible: false});
-    var bitmapHelper = new createjs.ButtonHelper(ui.buttons.roll, 'roll_out', 'roll_over', 'roll_down');    
-    ui.buttons.roll.addEventListener('click', () => {
-        createjs.Sound.play("click-sound");
-    });
+function rollagain(){
+    let remove = dice.filter(d=>!d.selected);
+    remove.forEach(d=>table.removeChild(d.container));
+    
+    dice = dice.filter(d=>d.selected);
+    roll(remove.length || 6);
+}
 
-    ui.buttons.score = new createjs.Sprite(spriteSheet, 'pass_out');
-    stage.addChild(ui.buttons.score).set({x: 610, y: 370, visible: false});
-    var bitmapHelper2 = new createjs.ButtonHelper(ui.buttons.score, 'pass_out', 'pass_over', 'pass_down');    
-    ui.buttons.score.addEventListener('click', () => {
-        createjs.Sound.play("click-sound");
-    });
+function doneturn() {
+    dice.forEach(d =>table.removeAllChildren())
+    dice = [];
+}
 
+
+function setupGameBoard(){
+
+    if (table === null) {
+        table = new createjs.Container();
+        table.x = 160;
+        table.y = 40;
+        stage.addChild(table);
+    } 
+
+    if (ui.buttons.roll === null) {
+        ui.buttons.roll = new createjs.Sprite(spriteSheet, 'roll_out');
+        stage.addChild(ui.buttons.roll).set({x: 20, y: 370, alpha:0});
+        var bitmapHelper = new createjs.ButtonHelper(ui.buttons.roll, 'roll_out', 'roll_over', 'roll_down');    
+        ui.buttons.roll.addEventListener('click', () => {
+            createjs.Sound.play("click-sound");
+            rollagain();
+        });
+    
+        ui.buttons.score = new createjs.Sprite(spriteSheet, 'pass_out');
+        stage.addChild(ui.buttons.score).set({x: 610, y: 370, alpha:0});
+        var bitmapHelper2 = new createjs.ButtonHelper(ui.buttons.score, 'pass_out', 'pass_over', 'pass_down');    
+        ui.buttons.score.addEventListener('click', () => {
+            createjs.Sound.play("click-sound");
+            doneturn();
+        });
+    }
 }
 
 
@@ -197,7 +230,7 @@ function myturn(){
     bitmap.on('pressup', function(evt: createjs.MouseEvent) {
         createjs.Tween.get(evt.target)
             .to({x: -200, y: -200, rotation: 140}, 600)
-            .call(()=>shuffle());
+            .call(()=>roll());
     }); 
 
 }
