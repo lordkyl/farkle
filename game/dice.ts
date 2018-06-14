@@ -1,3 +1,5 @@
+import { pipPositions } from './layout';
+
 const gridSize = 50;
 const dieSize = 100;
 
@@ -9,18 +11,6 @@ export interface GameDie {
     pips: createjs.Shape[];
     selected: boolean;
 }
-
-
-//coordinates of each pip
-var pipPositions = [
-    {x: 50, y: 50},
-    {x: 20, y: 20},
-    {x: 20, y: 50},
-    {x: 20, y: 80},
-    {x: 80, y: 20},
-    {x: 80, y: 50},
-    {x: 80, y: 80},
-];
 
 //return an array of correct pips for the score
 function pips(...indexes: number[]): createjs.Shape[] {

@@ -1,66 +1,60 @@
 /// <reference path="../node_modules/@types/easeljs/index.d.ts" />
 import { GameDie, drawDice, toggleSelected } from './dice';
+import { introText } from './text';
+import { dicePositions } from './layout';
+import { load, LoadResult } from './loader';
 
 var canvas: HTMLCanvasElement;
 var stage: createjs.Stage;
-var loadQueue :createjs.LoadQueue;
 var spriteSheet: createjs.SpriteSheet;
+var loadQueue: createjs.LoadQueue;
+
+//load and run
+window.onload = () => load('game-canvas').then(setup);
+
 var shakeSound: createjs.AbstractSoundInstance;
 var rollSound: createjs.AbstractSoundInstance;
 var dice: GameDie[] = [];
 var selected = () => dice.filter(d=>d.selected);
 var table: createjs.Container = null;
 var ui = {
-    intro: {
-        message: null,
-        event: null
-    },
     buttons: {
         roll: null,
         score: null
     }
 };
 
-function load(elementId: string)
-{
-    canvas = <HTMLCanvasElement>document.getElementById(elementId);
-    stage = new createjs.Stage(canvas);
-    stage.enableMouseOver(10);
-    createjs.Touch.enable(stage);
-    createjs.Ticker.framerate = 60;
-    createjs.Ticker.addEventListener("tick", stage);        
+function setup(loaded: LoadResult){
+    canvas = loaded.canvas;
+    stage = loaded.stage;
+    spriteSheet = loaded.sprites;
+    loadQueue = loaded.loadQueue;
     intro();
 }
 
-function intro(){
-    ui.intro.message = new createjs.Text("Click to Start!", "bold 24px Arial", "#ffffff");
-	ui.intro.message.maxWidth = 640;
-    ui.intro.message.textAlign = "center";
-    ui.intro.message.shadow = new createjs.Shadow("#000000", 5, 5, 10);
-	ui.intro.message.textBaseline = "middle";
-	ui.intro.message.x = canvas.width / 2;
-    ui.intro.message.y = canvas.height / 2;
-    stage.addChild(ui.intro.message);
 
-    createjs.Tween.get(ui.intro.message, { loop: 500})
+function intro(){
+    var msg = introText();
+	msg.x = canvas.width / 2;
+    msg.y = canvas.height / 2;
+    stage.addChild(msg);
+
+    createjs.Tween.get(msg, { loop: 500})
         .wait(2000)
         .to({scale: 1.2}, 300, createjs.Ease.getPowInOut(2))
         .to({scale: 1}, 300, createjs.Ease.getPowInOut(2));
 
-    ui.intro.event = stage.on('stagemouseup', start);
-
-    loadAssets();
+    var startEvent = stage.on('stagemouseup', () => {
+        createjs.Tween.get(msg)
+        .to({alpha:0}, 300, createjs.Ease.getPowOut(2))
+        .call(() => {
+            stage.off('stagemouseup', startEvent);
+            stage.removeChild(msg);
+            myturn();
+        });
+    });
 
     stage.update();
-}
-
-function start(){
-    stage.off('stagemouseup', ui.intro.event);
-
-    createjs.Tween.get(ui.intro.message)
-        .to({alpha:0}, 300, createjs.Ease.getPowOut(2))
-        .call(myturn);
-
 }
 
 function rolloverout(die: GameDie){
@@ -95,39 +89,6 @@ function selectDie(die: GameDie){
     
 }
 
-const pos = [
-    {x: 50, y: 200},
-    {x: 200, y: 200},
-    {x: 350, y: 200},
-    {x: 50, y: 350},
-    {x: 200, y: 350},
-    {x: 350, y: 350}
-];
-
-function loadAssets() {
-    loadQueue = new createjs.LoadQueue();
-    loadQueue.installPlugin(createjs.Sound);
-    loadQueue.addEventListener("complete", handleFileComplete);
-    loadQueue.loadManifest([
-        {id: "cup-sprite", src: "design/assets/dice-cup.png"},
-        {id: "button-sprite", src: "design/assets/button-spritesheet.png"},
-        {id: "throw-sound", src: "sounds/throw.wav"},
-        {id: "shake-sound", src: "sounds/shake.wav"},
-        {id: "click-sound", src: "sounds/click.mp3"},
-    ]);
-}
-
-function handleFileComplete(evt) {
-    spriteSheet = new createjs.SpriteSheet({
-        images: [loadQueue.getResult('button-sprite')],
-        frames: {width: 88, height: 88},
-        animations: { 
-            roll_out: 0, roll_over: 1, roll_down: 2,
-            pass_out: 3, pass_over: 4, pass_down: 5
-        }
-    });    
-}
-
 function roll(quantity: number = 6){
     if (table === null) setupGameBoard();
 
@@ -144,7 +105,7 @@ function roll(quantity: number = 6){
         d.container.x = -100;
         d.container.y = -100;
         createjs.Tween.get(d.container)
-            .to({x: pos[i].x, y:pos[i].y, rotation:360}, 400, createjs.Ease.getPowOut(2));
+            .to({x: dicePositions[i].x, y:dicePositions[i].y, rotation:360}, 400, createjs.Ease.getPowOut(2));
     })
 
     dice = [...dice, ...rolled];
@@ -235,4 +196,3 @@ function myturn(){
 
 }
 
-window.onload = () => load('game-canvas');
