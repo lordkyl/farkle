@@ -1,6 +1,6 @@
 /// <reference path="../node_modules/@types/easeljs/index.d.ts" />
 import { GameDie, drawDice, toggleSelected } from './dice';
-import { introText } from './text';
+import { introText, scoreText } from './text';
 import { dicePositions } from './layout';
 import { load, LoadResult } from './loader';
 import { setupGameBoard, showButtons, showCup } from './interface';
@@ -11,6 +11,7 @@ var spriteSheet: createjs.SpriteSheet;
 var loadQueue: createjs.LoadQueue;
 var table: createjs.Container;
 var quantity = 6;
+var score: createjs.Text;
 
 //load and run
 window.onload = () => load('game-canvas').then(setup);
@@ -33,6 +34,9 @@ function intro(){
 	msg.x = canvas.width / 2;
     msg.y = canvas.height / 2;
     stage.addChild(msg);
+
+    score = scoreText();
+    stage.addChild(score).set({visible:false});
 
     createjs.Tween.get(msg, { loop: 500})
         .wait(2000)

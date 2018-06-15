@@ -7,3 +7,23 @@ export function introText(): createjs.Text
 	msg.textBaseline = "middle";
     return msg;
 }
+
+export function scoreText(): createjs.Text {
+    var msg = new createjs.Text("SCORE", "bold 32px Arial", "#ffffff");
+    msg.x = 0;
+    msg.y = 8;
+    msg.maxWidth = 80;
+    msg.textAlign = "center";
+    msg.shadow = new createjs.Shadow("#000000", 1, 1, 1);
+    return msg;
+}
+
+export function scoreTextSmall(): createjs.Text {
+    var msg = new createjs.Text("score", "bold 18px Arial", "#ffffff");
+    msg.x = 0;
+    msg.y = 44;
+    msg.maxWidth = 80;
+    msg.textAlign = "center";
+    msg.shadow = new createjs.Shadow("#000000", 1, 1, 1);
+    return msg;
+}

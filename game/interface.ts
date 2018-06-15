@@ -1,14 +1,18 @@
 import { LoadResult } from './loader';
+import { scoreText, scoreTextSmall } from './text';
 
 var shakeSound: createjs.AbstractSoundInstance;
 var table: createjs.Container;
 var cupSprite: createjs.Bitmap;
 var rollButton: createjs.Sprite;
 var doneButton: createjs.Sprite;
+var scoreBoard: createjs.Container;
+var scoreLarge: createjs.Text;
+var scoreSmall: createjs.Text;
 
 export function showButtons(){
     if (rollButton.alpha === 1 && doneButton.alpha === 1) return;
-    
+
     createjs.Tween.get(rollButton).to({alpha:1}, 400);
     createjs.Tween.get(doneButton).to({alpha:1}, 400);
 }
@@ -18,9 +22,13 @@ export function showCup(){
     createjs.Tween.get(doneButton).to({alpha:0}, 400);
 
     cupSprite.x = 320;
-    cupSprite.y = 200;
+    cupSprite.y = 300;
     cupSprite.rotation = 0;
     cupSprite.visible = true;
+}
+
+export function showScore(){
+
 }
 
 export function setupGameBoard(loaded: LoadResult, roll: Function, done: Function, shake: Function): createjs.Container
@@ -31,11 +39,28 @@ export function setupGameBoard(loaded: LoadResult, roll: Function, done: Functio
 
     table = new createjs.Container();
     table.x = 160;
-    table.y = 40;
+    table.y = 140;
     stage.addChild(table);
 
+    scoreBoard = new createjs.Container();
+    var g = new createjs.Graphics();
+    g.setStrokeStyle(3);
+    g.beginStroke("#FFC602");
+    g.beginFill('#A17D00');
+    g.drawCircle(0,0,80);
+    var shape = new createjs.Shape(g);
+    shape.shadow = new createjs.Shadow("#333333",5,5,10);
+    scoreBoard.addChild(shape);
+    scoreLarge = scoreText();
+    scoreSmall = scoreTextSmall();
+    scoreBoard.addChild(scoreLarge);
+    scoreBoard.addChild(scoreSmall);
+    stage.addChild(scoreBoard).set({x:350});
+
+
+
     rollButton = new createjs.Sprite(spriteSheet, 'roll_out');
-    stage.addChild(rollButton).set({x: 20, y: 370, alpha:0});
+    stage.addChild(rollButton).set({x: 20, y: 470, alpha:0});
     var bitmapHelper = new createjs.ButtonHelper(rollButton, 'roll_out', 'roll_over', 'roll_down');    
     rollButton.addEventListener('click', () => {
         createjs.Sound.play("click-sound");
@@ -43,7 +68,7 @@ export function setupGameBoard(loaded: LoadResult, roll: Function, done: Functio
     });
 
     doneButton = new createjs.Sprite(spriteSheet, 'pass_out');
-    stage.addChild(doneButton).set({x: 610, y: 370, alpha:0});
+    stage.addChild(doneButton).set({x: 610, y: 470, alpha:0});
     var bitmapHelper2 = new createjs.ButtonHelper(doneButton, 'pass_out', 'pass_over', 'pass_down');    
     doneButton.addEventListener('click', () => {
         createjs.Sound.play("click-sound");
