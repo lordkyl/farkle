@@ -3,7 +3,8 @@ import { GameDie, drawDice, toggleSelected } from './dice';
 import { introText, scoreText } from './text';
 import { dicePositions } from './layout';
 import { load, LoadResult } from './loader';
-import { setupGameBoard, showButtons, showCup } from './interface';
+import { scoreTurn } from './score';
+import { setTurnScore, setupGameBoard, showButtons, showCup } from './interface';
 
 var canvas: HTMLCanvasElement;
 var stage: createjs.Stage;
@@ -27,7 +28,6 @@ function setup(loaded: LoadResult){
     table = setupGameBoard(loaded, rollagain, doneturn, roll);
     intro();
 }
-
 
 function intro(){
     var msg = introText();
@@ -61,6 +61,24 @@ function rolloverout(die: GameDie){
     stage.update();
 }
 
+function roll(){
+
+    var rolled = drawDice(quantity);
+
+    rolled.forEach((d,i) => {
+        table.addChild(d.container)        
+        d.container.on('rollover', ()=>rolloverout(d));
+        d.container.on('rollout', ()=>rolloverout(d));
+        d.container.on('click', ()=>selectDie(d));
+        d.container.x = -100;
+        d.container.y = -100;
+        createjs.Tween.get(d.container)
+            .to({x: dicePositions[i].x, y:dicePositions[i].y, rotation:360}, 400, createjs.Ease.getPowOut(2));
+    })
+
+    dice = [...dice, ...rolled];
+}
+
 function selectDie(die: GameDie){
     //count the number of existing selected dice
     let count = selected().length;
@@ -82,38 +100,38 @@ function selectDie(die: GameDie){
 
     //show the command buttons when selecting the first die
     showButtons();
-    
-}
 
-function roll(){
-
-    var rolled = drawDice(quantity);
-
-    rolled.forEach((d,i) => {
-        table.addChild(d.container)        
-        d.container.on('rollover', ()=>rolloverout(d));
-        d.container.on('rollout', ()=>rolloverout(d));
-        d.container.on('click', ()=>selectDie(d));
-        d.container.x = -100;
-        d.container.y = -100;
-        createjs.Tween.get(d.container)
-            .to({x: dicePositions[i].x, y:dicePositions[i].y, rotation:360}, 400, createjs.Ease.getPowOut(2));
-    })
-
-    dice = [...dice, ...rolled];
+    var score = scoreTurn(dice);
+    setTurnScore(score);
 }
 
 function rollagain(){
-    let remove = dice.filter(d=>!d.selected);
-    remove.forEach(d=>table.removeChild(d.container));
-    
-    dice = dice.filter(d=>d.selected);
+    //the dice not selected are discarded and re-rolled
+    let discard = dice.filter(d => !d.selected);
 
-    quantity = remove.length || 6;
+    //cleanup the interface
+    discard.forEach(d=>table.removeChild(d.container));
+
+    //remove the dice from the array
+    dice = dice.filter(d=>d.selected).map(d => {
+        return {
+            ...d,
+            selected: false,
+            scored: true
+        };
+    });
+
+    //set this variable to roll the correct number of dice
+    quantity = discard.length || 6;
+
+    //show the rolling interface
     showCup();
 }
 
 function doneturn() {
+    //cleanup graphics
     dice.forEach(d =>table.removeAllChildren())
+
+    //empty array
     dice = [];
 }

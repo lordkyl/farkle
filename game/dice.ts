@@ -10,6 +10,7 @@ export interface GameDie {
     cubes: createjs.Shape[]; 
     pips: createjs.Shape[];
     selected: boolean;
+    scored: boolean;
 }
 
 //return an array of correct pips for the score
@@ -38,6 +39,7 @@ export function createGameDie(score:number): GameDie {
         container: container,
         cubes: [drawCube(StandardCubeStyle), drawCube(SelectedCubeStyle, false)],
         selected:false,
+        scored: false,
         pips: pips
     };
 
@@ -50,7 +52,7 @@ export function createGameDie(score:number): GameDie {
 export function drawDice(quantity: number): GameDie[]
 {
     //randomize die values
-    var scores = Array.from(randomDice(quantity));
+    var scores = [1,1,2,2,2,3]; //Array.from(randomDice(quantity));
 
     //create random die in each position
     return scores.map((score,i) => createGameDie(score));

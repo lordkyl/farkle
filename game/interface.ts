@@ -6,9 +6,61 @@ var table: createjs.Container;
 var cupSprite: createjs.Bitmap;
 var rollButton: createjs.Sprite;
 var doneButton: createjs.Sprite;
-var scoreBoard: createjs.Container;
 var scoreLarge: createjs.Text;
 var scoreSmall: createjs.Text;
+var scoreTemp: createjs.Text;
+
+export function setTurnScore(score: number){
+    if (score <= 0) return;
+
+    scoreTemp.y = 400;
+    scoreTemp.text = score.toString();
+
+    createjs.Tween.get(scoreTemp)
+        .to({y:250, scale:1.7, alpha:1}, 400, createjs.Ease.getPowIn(2))
+        .to({y:44, scale:1.2, alpha:0}, 400, createjs.Ease.getPowOut(2));
+
+    createjs.Tween.get(scoreSmall)
+        .to({alpha:0}, 100)
+        .wait(600)
+        .to({alpha:0}, 200)
+        .call(() => {
+            scoreSmall.text = score.toString();
+        })
+        .to({alpha:1, scale: 1.1}, 200)
+        .to({scale:1}, 200);
+}
+
+export function setTotalScore(score: number){
+    scoreSmall.text = score.toString();
+}
+
+export function setupScoreboard(): createjs.Container
+{
+    var scoreBoard = new createjs.Container();
+    var g = new createjs.Graphics();
+    g.setStrokeStyle(3);
+    g.beginStroke("#FFC602");
+    g.beginFill('#A17D00');
+    g.drawCircle(0,0,80);
+    var shape = new createjs.Shape(g);
+    shape.shadow = new createjs.Shadow("#333333",5,5,10);
+    scoreBoard.addChild(shape);
+    scoreLarge = scoreText();
+    scoreSmall = scoreTextSmall();
+    scoreBoard.addChild(scoreLarge);
+    scoreBoard.addChild(scoreSmall);
+
+    scoreTemp = new createjs.Text("100", "bold 24px Arial", "#ffffff");
+    scoreTemp.maxWidth = 640;
+    scoreTemp.textAlign = "center";
+    scoreTemp.shadow = new createjs.Shadow("#000000", 5, 5, 10);
+    scoreTemp.textBaseline = "middle";
+    scoreTemp.alpha = 0;
+    scoreBoard.addChild(scoreTemp).set({y: 400});
+
+    return scoreBoard;
+}
 
 export function showButtons(){
     if (rollButton.alpha === 1 && doneButton.alpha === 1) return;
@@ -27,10 +79,6 @@ export function showCup(){
     cupSprite.visible = true;
 }
 
-export function showScore(){
-
-}
-
 export function setupGameBoard(loaded: LoadResult, roll: Function, done: Function, shake: Function): createjs.Container
 {
     let stage = loaded.stage;
@@ -42,20 +90,7 @@ export function setupGameBoard(loaded: LoadResult, roll: Function, done: Functio
     table.y = 140;
     stage.addChild(table);
 
-    scoreBoard = new createjs.Container();
-    var g = new createjs.Graphics();
-    g.setStrokeStyle(3);
-    g.beginStroke("#FFC602");
-    g.beginFill('#A17D00');
-    g.drawCircle(0,0,80);
-    var shape = new createjs.Shape(g);
-    shape.shadow = new createjs.Shadow("#333333",5,5,10);
-    scoreBoard.addChild(shape);
-    scoreLarge = scoreText();
-    scoreSmall = scoreTextSmall();
-    scoreBoard.addChild(scoreLarge);
-    scoreBoard.addChild(scoreSmall);
-    stage.addChild(scoreBoard).set({x:350});
+    stage.addChild(setupScoreboard()).set({x:350});
 
 
 

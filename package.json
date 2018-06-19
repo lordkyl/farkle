@@ -15,6 +15,8 @@
   "homepage": "https://bitbucket.org/charlestrout/farkle-game#readme",
   "dependencies": {
     "@types/createjs": "0.0.29",
+    "@types/lodash": "^4.14.110",
+    "lodash": "^4.17.10",
     "createjs": "^1.0.1",
     "exports-loader": "^0.7.0",
     "imports-loader": "^0.8.0"
