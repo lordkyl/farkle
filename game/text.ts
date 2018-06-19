@@ -1,4 +1,4 @@
-export function introText(): createjs.Text
+export function getIntroText(): createjs.Text
 {
     var msg = new createjs.Text("Click to Start!", "bold 24px Arial", "#ffffff");
 	msg.maxWidth = 640;
@@ -8,7 +8,7 @@ export function introText(): createjs.Text
     return msg;
 }
 
-export function scoreText(): createjs.Text {
+export function getScoreText(): createjs.Text {
     var msg = new createjs.Text("SCORE", "bold 32px Arial", "#ffffff");
     msg.x = 0;
     msg.y = 8;
@@ -18,7 +18,7 @@ export function scoreText(): createjs.Text {
     return msg;
 }
 
-export function scoreTextSmall(): createjs.Text {
+export function getScoreTextSmall(): createjs.Text {
     var msg = new createjs.Text("score", "bold 18px Arial", "#ffffff");
     msg.x = 0;
     msg.y = 44;

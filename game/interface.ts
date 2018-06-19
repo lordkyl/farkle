@@ -1,5 +1,5 @@
 import { LoadResult } from './loader';
-import { scoreText, scoreTextSmall } from './text';
+import { getScoreText, getScoreTextSmall } from './text';
 
 var shakeSound: createjs.AbstractSoundInstance;
 var table: createjs.Container;
@@ -16,19 +16,35 @@ export function setTurnScore(score: number){
     scoreTemp.y = 400;
     scoreTemp.text = score.toString();
 
+    scoreSmall.y = 44;
+    scoreSmall.alpha = 1;
+
     createjs.Tween.get(scoreTemp)
         .to({y:250, scale:1.7, alpha:1}, 400, createjs.Ease.getPowIn(2))
         .to({y:44, scale:1.2, alpha:0}, 400, createjs.Ease.getPowOut(2));
 
     createjs.Tween.get(scoreSmall)
-        .to({alpha:0}, 100)
         .wait(600)
-        .to({alpha:0}, 200)
+        .to({alpha:0, scale:1.5}, 200)
         .call(() => {
             scoreSmall.text = score.toString();
         })
         .to({alpha:1, scale: 1.1}, 200)
         .to({scale:1}, 200);
+}
+
+export function setGameScore(score: number){
+    if (score <= 0) return;
+
+    createjs.Tween.get(scoreSmall)
+        .to({y:0, alpha:0}, 300);
+    
+    createjs.Tween.get(scoreLarge)
+        .to({scale:1.3}, 150)
+        .call(()=>{
+            scoreLarge.text = score.toString();
+        })
+        .to({scale:1}, 150);
 }
 
 export function setTotalScore(score: number){
@@ -46,8 +62,8 @@ export function setupScoreboard(): createjs.Container
     var shape = new createjs.Shape(g);
     shape.shadow = new createjs.Shadow("#333333",5,5,10);
     scoreBoard.addChild(shape);
-    scoreLarge = scoreText();
-    scoreSmall = scoreTextSmall();
+    scoreLarge = getScoreText();
+    scoreSmall = getScoreTextSmall();
     scoreBoard.addChild(scoreLarge);
     scoreBoard.addChild(scoreSmall);
 
