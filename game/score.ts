@@ -2,8 +2,8 @@ import { GameDie } from "./dice";
 import * as _ from "lodash";
 
 export function scoreTurn(dice: GameDie[]): number {
-    //group the selected dice by the die score
-    var group = _(dice)
+
+    let group = _(dice)
     .filter(d => d.selected)
     .groupBy(d=>d.score);
 

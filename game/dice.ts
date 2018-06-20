@@ -52,7 +52,9 @@ export function createGameDie(score:number): GameDie {
 export function drawDice(quantity: number): GameDie[]
 {
     //randomize die values
-    var scores = [1,1,2,2,2,3]; //Array.from(randomDice(quantity));
+    //var scores = [1,1,2,2,2,3];
+    var scores = [2,2,3,3,4,4];
+    //var scores = Array.from(randomDice(quantity));
 
     //create random die in each position
     return scores.map((score,i) => createGameDie(score));

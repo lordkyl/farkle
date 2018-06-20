@@ -1,5 +1,5 @@
 import { LoadResult } from './loader';
-import { getScoreText, getScoreTextSmall } from './text';
+import { getScoreText, getScoreTextSmall, getBustText } from './text';
 
 var shakeSound: createjs.AbstractSoundInstance;
 var table: createjs.Container;
@@ -9,6 +9,7 @@ var doneButton: createjs.Sprite;
 var scoreLarge: createjs.Text;
 var scoreSmall: createjs.Text;
 var scoreTemp: createjs.Text;
+var bustText: createjs.Text;
 
 export function setTurnScore(score: number){
     if (score <= 0) return;
@@ -31,6 +32,15 @@ export function setTurnScore(score: number){
         })
         .to({alpha:1, scale: 1.1}, 200)
         .to({scale:1}, 200);
+}
+
+export function showBustMessage(): Promise<createjs.Text> {
+    return new Promise((resolve,reject) => {
+        createjs.Tween.get(bustText)
+        .to({alpha:1, scale:1.5}, 200, createjs.Ease.getPowIn(4))
+        .to({scale:1}, 300, createjs.Ease.getPowIn(4))
+        .call(() => resolve(bustText));
+    });
 }
 
 export function setGameScore(score: number){
@@ -108,7 +118,8 @@ export function setupGameBoard(loaded: LoadResult, roll: Function, done: Functio
 
     stage.addChild(setupScoreboard()).set({x:350});
 
-
+    bustText = getBustText(360,245);
+    stage.addChild(bustText).set({alpha:0});
 
     rollButton = new createjs.Sprite(spriteSheet, 'roll_out');
     stage.addChild(rollButton).set({x: 20, y: 470, alpha:0});

@@ -4,16 +4,16 @@ import { getIntroText, getScoreText } from './text';
 import { dicePositions } from './layout';
 import { load, LoadResult } from './loader';
 import { scoreTurn } from './score';
-import { setTurnScore, setupGameBoard, showButtons, showCup, setGameScore } from './interface';
+import { setTurnScore, setupGameBoard, showButtons, showCup, setGameScore, showBustMessage } from './interface';
 
 var canvas: HTMLCanvasElement;
 var stage: createjs.Stage;
 var table: createjs.Container;
 var quantity = 6;
 var scoreText: createjs.Text;
-
 var gameScore: number = 0;
 var turnScore: number = 0;
+var busted = false;
 
 //load and run
 window.onload = () => load('game-canvas').then(setup);
@@ -28,9 +28,7 @@ function setup(loaded: LoadResult){
 }
 
 function intro(){
-    var msg = getIntroText();
-	msg.x = canvas.width / 2;
-    msg.y = canvas.height / 2;
+    var msg = getIntroText(canvas.width / 2, canvas.height / 2);
     stage.addChild(msg);
 
     scoreText = getScoreText();
@@ -55,12 +53,13 @@ function intro(){
 }
 
 function rolloverout(die: GameDie){
-    toggleSelected(die);
+    if (!busted)
+        toggleSelected(die);
     stage.update();
 }
 
 function roll(){
-
+    busted = false;
     var rolled = drawDice(quantity);
 
     rolled.forEach((d,i) => {
@@ -75,7 +74,31 @@ function roll(){
     })
 
     dice = [...dice, ...rolled];
+
+    //if the user can't score this roll then they busted!
+    if (scoreTurn(rolled) === 0) showBusted();
 }
+
+function showBusted(){
+    turnScore = 0;
+    busted = true;
+    showBustMessage().then((text)=>{
+        var startEvent = stage.on('stagemouseup', () => {
+
+            //clean up bust text and event handler
+            createjs.Tween.get(text)
+            .to({alpha:0}, 300, createjs.Ease.getPowOut(2))
+            .call(() => {
+                stage.off('stagemouseup', startEvent);
+            });
+
+            //cleanup
+            doneturn();
+        });
+    });
+
+}
+
 
 function selectDie(die: GameDie){
     //count the number of existing selected dice
@@ -132,8 +155,19 @@ function doneturn() {
         setGameScore(gameScore);
     }
 
-    //cleanup graphics
-    dice.forEach(d =>table.removeAllChildren())
+    //animate the remaining dice off the screen and remove with a timeline
+    var tl = new createjs.Timeline({
+        onComplete:()=>dice.forEach(d =>table.removeAllChildren())
+    });
+
+    dice.forEach( (d,i) => {
+        let t = createjs.Tween.get(d.container)
+            .wait(i * 80)
+            .to({y: 800, rotation: 180}, 600);
+
+        tl.addTween(t);
+    });
+
 
     //empty array
     dice = [];
