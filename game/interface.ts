@@ -12,6 +12,13 @@ var scoreSmall: createjs.Text;
 var scoreTemp: createjs.Text;
 var bustText: createjs.Text;
 
+export function resetTurnScore()
+{
+    scoreSmall.y = 44;
+    scoreSmall.alpha = 1;
+    scoreSmall.text = "---";
+}
+
 export function setTurnScore(score: number){
     scoreTemp.y = 400;
     scoreTemp.text = score.toString();

@@ -23,7 +23,7 @@ export function getIntroText(x: number, y: number): createjs.Text
 }
 
 export function getScoreText(): createjs.Text {
-    var msg = new createjs.Text("SCORE", "bold 32px Arial", "#ffffff");
+    var msg = new createjs.Text("0000", "bold 32px Arial", "#ffffff");
     msg.x = 0;
     msg.y = 8;
     msg.maxWidth = 80;
@@ -33,7 +33,7 @@ export function getScoreText(): createjs.Text {
 }
 
 export function getScoreTextSmall(): createjs.Text {
-    var msg = new createjs.Text("score", "bold 18px Arial", "#ffffff");
+    var msg = new createjs.Text("---", "bold 18px Arial", "#ffffff");
     msg.x = 0;
     msg.y = 44;
     msg.maxWidth = 80;

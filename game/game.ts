@@ -4,7 +4,7 @@ import { getIntroText, getScoreText } from './text';
 import { dicePositions, selectedPositions } from './layout';
 import { load, LoadResult } from './loader';
 import { scoreTurn } from './score';
-import { setTurnScore, setupGameBoard, showButtons, showCup, setGameScore, showBustMessage, fallingDice } from './interface';
+import { setTurnScore, setupGameBoard, showButtons, showCup, setGameScore, showBustMessage, fallingDice, resetTurnScore } from './interface';
 
 var canvas: HTMLCanvasElement;
 var stage: createjs.Stage;
@@ -212,16 +212,18 @@ function doneturn() {
         ]).then( () => {
 
             //increment the turn score
-            turnScore += scoreTurn(selectedDice);
+            gameScore += scoreTurn(selectedDice);
+            setGameScore(gameScore);
+            resetTurnScore();
 
+            //cleanup
             thrownDice = [];
             selectedDice = [];
-            turnDice = [];
+            turnDice = [[]];
             selectedCount = 0;
+            turnScore = 0;
 
-            gameScore += turnScore;
-            setGameScore(gameScore);
-
+            //roll again
             rolling = true;
             showCup(); 
         });
