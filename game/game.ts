@@ -1,10 +1,10 @@
 /// <reference path="../node_modules/@types/easeljs/index.d.ts" />
 import { GameDie, drawDice, toggleSelected } from './dice';
 import { getIntroText, getScoreText } from './text';
-import { dicePositions } from './layout';
+import { dicePositions, selectedPositions } from './layout';
 import { load, LoadResult } from './loader';
 import { scoreTurn } from './score';
-import { setTurnScore, setupGameBoard, showButtons, showCup, setGameScore, showBustMessage } from './interface';
+import { setTurnScore, setupGameBoard, showButtons, showCup, setGameScore, showBustMessage, fallingDice } from './interface';
 
 var canvas: HTMLCanvasElement;
 var stage: createjs.Stage;
@@ -14,11 +14,15 @@ var scoreText: createjs.Text;
 var gameScore: number = 0;
 var turnScore: number = 0;
 var busted = false;
+var rolling = false;
+var thrownDice: GameDie[] = [];
+var selectedDice: GameDie[] = [];
+var turnDice: GameDie[][] = [[]];
+var selectedCount: number = 0;
 
 //load and run
 window.onload = () => load('game-canvas').then(setup);
 
-var dice: GameDie[] = [];
 
 function setup(loaded: LoadResult){
     canvas = loaded.canvas;
@@ -45,6 +49,7 @@ function intro(){
         .call(() => {
             stage.off('stagemouseup', startEvent);
             stage.removeChild(msg);
+            rolling = true;
             showCup();
         });
     });
@@ -53,16 +58,16 @@ function intro(){
 }
 
 function rolloverout(die: GameDie){
-    if (!busted)
-        toggleSelected(die);
+    if (!busted && !die.selected && !rolling) toggleSelected(die);
     stage.update();
 }
 
 function roll(){
     busted = false;
-    var rolled = drawDice(quantity);
+    rolling = false;
+    thrownDice = drawDice(quantity);
 
-    rolled.forEach((d,i) => {
+    thrownDice.forEach(d => {
         table.addChild(d.container)        
         d.container.on('rollover', ()=>rolloverout(d));
         d.container.on('rollout', ()=>rolloverout(d));
@@ -70,18 +75,27 @@ function roll(){
         d.container.x = -100;
         d.container.y = -100;
         createjs.Tween.get(d.container)
-            .to({x: dicePositions[i].x, y:dicePositions[i].y, rotation:360}, 400, createjs.Ease.getPowOut(2));
+            .to({
+                    x: dicePositions[d.index].x, 
+                    y:dicePositions[d.index].y, 
+                    rotation:360
+                }, 400, createjs.Ease.getPowOut(2));
     })
 
-    dice = [...dice, ...rolled];
-
     //if the user can't score this roll then they busted!
-    if (scoreTurn(rolled) === 0) showBusted();
+    if (scoreTurn(thrownDice) === 0) {
+        showBusted();
+    } else {
+        showButtons();
+    }
 }
 
 function showBusted(){
+    selectedCount = 0;
     turnScore = 0;
     busted = true;
+    setTurnScore(0);
+
     showBustMessage().then((text)=>{
         var startEvent = stage.on('stagemouseup', () => {
 
@@ -99,76 +113,116 @@ function showBusted(){
 
 }
 
-
 function selectDie(die: GameDie){
-    //count the number of existing selected dice
-    let count = dice.filter(d=>d.selected || d.scored).length;
+    if (busted || rolling) return;
 
-    //mark the die as selected
-    die.selected = true;
+    //calculate the current score before this die
+    var currentScore = scoreTurn(selectedDice);
+
     toggleSelected(die);
     stage.update();
 
-    //calculted selected die positions
-    let rows = Math.floor(count / 7);
-    let y = rows * 60;
-    let x = (count - (rows*7)) * 60;
+    //count the number of existing selected dice
+    if (die.selected) {
+        selectedCount--;
 
-    //animation to new position
-    createjs.Tween.get(die.container)
-        .to({scale:1.2}, 200, createjs.Ease.getPowIn(2))
-        .to({x:x, y:y, scale:0.5}, 500, createjs.Ease.getPowOut(2));
+        //remove the selected die from the array of thrown dice
+        selectedDice = selectedDice.filter(d => d !== die);
+
+        //add dice to thrown array
+        thrownDice = [...thrownDice, die];
+
+        //animate return to old position
+        createjs.Tween.get(die.container)
+            .to({
+                x:dicePositions[die.index].x,
+                y:dicePositions[die.index].y,
+                scale:1
+            }, 500, createjs.Ease.getPowOut(2));
+
+    } else {
+        selectedCount++;
+
+        //remove the selected die from the array of thrown dice
+        thrownDice = thrownDice.filter(d => d !== die);
+
+        //add dice to selected array
+        selectedDice = [...selectedDice, die];
+
+        //animation to the "selected" position
+        let {x, y} = selectedPositions(selectedCount-1);
+        createjs.Tween.get(die.container)
+            .to({scale:1.2}, 200, createjs.Ease.getPowIn(2))
+            .to({x:x, y:y, scale:0.5}, 500, createjs.Ease.getPowOut(2));
+    }
+
+    die.selected = !die.selected;
 
     //show the command buttons when selecting the first die
     showButtons();
 
-    turnScore = scoreTurn(dice);
-    setTurnScore(turnScore);
+    //selected dice are dice selected this rounde
+    let newScore = scoreTurn(selectedDice);
+
+    //only show the score animation changing when the number has changbed
+    if (currentScore !== newScore) {
+        setTurnScore(turnScore + newScore);
+    }
 }
 
-function rollagain(){
-    //the dice not selected are discarded and re-rolled
-    let discard = dice.filter(d => !d.selected);
+function rollagain() {
 
-    //cleanup the interface
-    discard.forEach(d=>table.removeChild(d.container));
+    //the correct number of dice to throw next turn
+    quantity = thrownDice.length || 6;
 
-    //remove the dice from the array
-    dice = dice.filter(d=>d.selected).map(d => {
-        return {
-            ...d,
-            selected: false,
-            scored: true
-        };
+    //mark the selected dice as scored for this turn
+    selectedDice.forEach(d=>d.scored = true);
+
+    //cleanup the thrown dice
+    fallingDice(thrownDice).then( () => {
+
+        //increment the turn score
+        turnScore += scoreTurn(selectedDice);
+
+        //add to the turn dice
+        turnDice = [...turnDice, selectedDice];
+
+        //cleanup 
+        thrownDice = [];
+        selectedDice = [];
+
+        //show the cup to start a new roll
+        rolling = true;
+        showCup(); 
     });
 
-    //set this variable to roll the correct number of dice
-    quantity = discard.length || 6;
-
-    //show the rolling interface
-    showCup();
 }
 
 function doneturn() {
-    if (turnScore > 0) {
-        gameScore += turnScore;
-        setGameScore(gameScore);
-    }
+    quantity = 6;
 
-    //animate the remaining dice off the screen and remove with a timeline
-    var tl = new createjs.Timeline({
-        onComplete:()=>dice.forEach(d =>table.removeAllChildren())
-    });
+    //mark the selected dice as scored for this turn
+    selectedDice.forEach(d=>d.scored = true);
 
-    dice.forEach( (d,i) => {
-        let t = createjs.Tween.get(d.container)
-            .wait(i * 80)
-            .to({y: 800, rotation: 180}, 600);
+    
+    fallingDice([
+            ...thrownDice, 
+            ...selectedDice, 
+            ...turnDice.reduce((a,b) => a.concat(b))
+        ]).then( () => {
 
-        tl.addTween(t);
-    });
+            //increment the turn score
+            turnScore += scoreTurn(selectedDice);
 
+            thrownDice = [];
+            selectedDice = [];
+            turnDice = [];
+            selectedCount = 0;
 
-    //empty array
-    dice = [];
-}
+            gameScore += turnScore;
+            setGameScore(gameScore);
+
+            rolling = true;
+            showCup(); 
+        });
+ }

@@ -5,6 +5,7 @@ const dieSize = 100;
 
 
 export interface GameDie {
+    index: number;
     score: number;
     container: createjs.Container;
     cubes: createjs.Shape[]; 
@@ -22,7 +23,7 @@ export function toggleSelected(die: GameDie){
     die.cubes.forEach(c => c.visible = !c.visible);
 }
 
-export function createGameDie(score:number): GameDie {
+export function createGameDie(score:number, index: number): GameDie {
     var container = new createjs.Container();
     container.regX = dieSize / 2;
     container.regY = dieSize / 2;
@@ -35,10 +36,11 @@ export function createGameDie(score:number): GameDie {
     pips.forEach(p => container.addChild(p));
     
     var result = {
+        index: index,
         score: score,
         container: container,
         cubes: [drawCube(StandardCubeStyle), drawCube(SelectedCubeStyle, false)],
-        selected:false,
+        selected: false,
         scored: false,
         pips: pips
     };
@@ -52,12 +54,12 @@ export function createGameDie(score:number): GameDie {
 export function drawDice(quantity: number): GameDie[]
 {
     //randomize die values
-    //var scores = [1,1,2,2,2,3];
-    var scores = [2,2,3,3,4,4];
+    var scores = [1,1,2,2,2,3];
+    //var scores = [2,2,3,3,4,4];
     //var scores = Array.from(randomDice(quantity));
 
     //create random die in each position
-    return scores.map((score,i) => createGameDie(score));
+    return scores.map((score,i) => createGameDie(score,i));
 }
 
 //generate some random dice values

@@ -16,3 +16,19 @@ export const pipPositions = [
     {x: 80, y: 50},
     {x: 80, y: 80},
 ];
+
+export interface Position
+{
+    x: number;
+    y: number;
+}
+
+export function selectedPositions(index: number): Position
+{
+    let max = 7;
+
+    return {
+        y: Math.floor(index / max) * 60,
+        x: (index % max) * 60
+    }
+}

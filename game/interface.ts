@@ -1,5 +1,6 @@
 import { LoadResult } from './loader';
 import { getScoreText, getScoreTextSmall, getBustText } from './text';
+import { GameDie } from './dice';
 
 var shakeSound: createjs.AbstractSoundInstance;
 var table: createjs.Container;
@@ -12,8 +13,6 @@ var scoreTemp: createjs.Text;
 var bustText: createjs.Text;
 
 export function setTurnScore(score: number){
-    if (score <= 0) return;
-
     scoreTemp.y = 400;
     scoreTemp.text = score.toString();
 
@@ -103,6 +102,29 @@ export function showCup(){
     cupSprite.y = 300;
     cupSprite.rotation = 0;
     cupSprite.visible = true;
+}
+
+export function fallingDice(dice: GameDie[]): Promise<void> {
+
+    return new Promise( (resolve, reject) => {
+
+        //animate the remaining dice off the screen and remove with a timeline
+        var tl = new createjs.Timeline({
+            onComplete:()=>{
+                dice.forEach(d =>table.removeChild(d.container));
+                dice = [];
+                resolve();
+            }
+        });
+
+        dice.forEach( (d,i) => {
+            let t = createjs.Tween.get(d.container)
+                .wait(i * 80)
+                .to({y: 800, rotation: 180}, 600);
+
+            tl.addTween(t);
+        });    
+    });
 }
 
 export function setupGameBoard(loaded: LoadResult, roll: Function, done: Function, shake: Function): createjs.Container
