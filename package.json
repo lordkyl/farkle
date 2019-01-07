@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack-serve ./webpack.config.js",
+    "dev": "webpack-dev-server --content-base public/",
     "build": "webpack"
   },
   "repository": {
@@ -27,6 +27,6 @@
     "typescript": "^2.8.4",
     "webpack": "~4.10.2",
     "webpack-cli": "^2.1.4",
-    "webpack-serve": "^1.0.2"
+    "webpack-dev-server": "^3.1.14"
   }
 }

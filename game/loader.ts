@@ -18,12 +18,12 @@ export function load(elementId: string) : Promise<LoadResult>
     loadQueue.installPlugin(createjs.Sound);
  
     loadQueue.loadManifest([
-        {id: "cup-sprite", src: "public/assets/dice-cup.png"},
-        {id: "button-sprite", src: "public/assets/button-spritesheet.png"},
-        {id: "throw-sound", src: "public/assets/sounds/throw.wav"},
-        {id: "shake-sound", src: "public/assets/sounds/shake.wav"},
-        {id: "click-sound", src: "public/assets/sounds/click.mp3"},
-        {id: "error-sound", src: "public/assets/sounds/negative_2.wav"}
+        {id: "cup-sprite", src: "assets/dice-cup.png"},
+        {id: "button-sprite", src: "assets/button-spritesheet.png"},
+        {id: "throw-sound", src: "assets/sounds/throw.wav"},
+        {id: "shake-sound", src: "assets/sounds/shake.wav"},
+        {id: "click-sound", src: "assets/sounds/click.mp3"},
+        {id: "error-sound", src: "assets/sounds/negative_2.wav"}
     ]);
 
     return new Promise((resolve,reject) => {

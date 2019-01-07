@@ -8,7 +8,8 @@ module.exports = {
     },
     output: {
         filename: '[name].js',
-        path: path.resolve(__dirname, 'public/scripts')
+        path: path.resolve(__dirname, 'public/assets'),
+        publicPath: "/assets/",
     },
     resolve: {
         alias: {
@@ -23,7 +24,7 @@ module.exports = {
                 exclude: /node_modules/,
             },
             {
-                test: /node_modules[/\\]createjs/,
+                test: /node_modules[/\\]createjs/,  
                 loaders: [
                   'imports-loader?this=>window',
                   'exports-loader?window.createjs'
