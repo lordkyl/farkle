@@ -1,14 +1,14 @@
 var path = require('path');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
     entry: {
         app: './game/game.ts',
         createjs: './node_modules/createjs/builds/1.0.0/createjs.js'
     },
     output: {
         filename: '[name].js',
-        path: path.resolve(__dirname, 'dist/')
+        path: path.resolve(__dirname, 'public/scripts')
     },
     resolve: {
         alias: {

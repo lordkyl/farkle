@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack-serve ./webpack.config.js",
-    "dist": "webpack"
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
