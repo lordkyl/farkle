@@ -23,6 +23,7 @@ export function load(elementId: string) : Promise<LoadResult>
         {id: "throw-sound", src: "sounds/throw.wav"},
         {id: "shake-sound", src: "sounds/shake.wav"},
         {id: "click-sound", src: "sounds/click.mp3"},
+        {id: "error-sound", src: "sounds/negative_2.wav"}
     ]);
 
     return new Promise((resolve,reject) => {

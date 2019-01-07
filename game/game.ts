@@ -3,7 +3,7 @@ import { GameDie, drawDice, toggleSelected } from './dice';
 import { getIntroText, getScoreText } from './text';
 import { dicePositions, selectedPositions } from './layout';
 import { load, LoadResult } from './loader';
-import { scoreTurn } from './score';
+import { scoreTurn, validateTurn } from './score';
 import { setTurnScore, setupGameBoard, showButtons, showCup, setGameScore, showBustMessage, fallingDice, resetTurnScore } from './interface';
 
 var canvas: HTMLCanvasElement;
@@ -81,7 +81,7 @@ function roll(){
                     rotation:360
                 }, 400, createjs.Ease.getPowOut(2));
     })
-
+    
     //if the user can't score this roll then they busted!
     if (scoreTurn(thrownDice) === 0) {
         showBusted();
@@ -112,6 +112,7 @@ function showBusted(){
     });
 
 }
+
 
 function selectDie(die: GameDie){
     if (busted || rolling) return;
@@ -172,6 +173,13 @@ function selectDie(die: GameDie){
 
 function rollagain() {
 
+    if (!validateTurn(selectedDice)) {
+        createjs.Sound.play("error-sound");
+        return;
+    }
+
+    createjs.Sound.play("click-sound");
+
     //the correct number of dice to throw next turn
     quantity = thrownDice.length || 6;
 
@@ -199,6 +207,14 @@ function rollagain() {
 }
 
 function doneturn() {
+
+    if (!validateTurn(selectedDice)) {
+        createjs.Sound.play("error-sound");
+        return;
+    }
+
+    createjs.Sound.play("click-sound");
+
     quantity = 6;
 
     //mark the selected dice as scored for this turn
@@ -212,7 +228,8 @@ function doneturn() {
         ]).then( () => {
 
             //increment the turn score
-            gameScore += scoreTurn(selectedDice);
+            turnScore += scoreTurn(selectedDice);
+            gameScore += turnScore; //scoreTurn(selectedDice);
             setGameScore(gameScore);
             resetTurnScore();
 

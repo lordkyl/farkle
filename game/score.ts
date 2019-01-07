@@ -1,6 +1,24 @@
 import { GameDie } from "./dice";
 import * as _ from "lodash";
 
+export function validateTurn(dice: GameDie[]): boolean {
+    var group = _(dice)
+        .groupBy(d=>d.score);
+
+    var gv = group
+        .filter(g => g.length >= 3)
+        .flatten()
+        .size();
+
+    var gs = group
+        .filter(g => g.length <= 2)
+        .flatten()
+        .filter(d => d.score === 1 || d.score === 5)
+        .size();
+
+    return gv + gs === dice.length;
+}
+
 export function scoreTurn(dice: GameDie[]): number {
     //group the selected dice by the die score
     var group = _(dice).groupBy(d=>d.score);

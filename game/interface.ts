@@ -154,7 +154,6 @@ export function setupGameBoard(loaded: LoadResult, roll: Function, done: Functio
     stage.addChild(rollButton).set({x: 20, y: 470, alpha:0});
     var bitmapHelper = new createjs.ButtonHelper(rollButton, 'roll_out', 'roll_over', 'roll_down');    
     rollButton.addEventListener('click', () => {
-        createjs.Sound.play("click-sound");
         roll();
     });
 
@@ -162,7 +161,6 @@ export function setupGameBoard(loaded: LoadResult, roll: Function, done: Functio
     stage.addChild(doneButton).set({x: 610, y: 470, alpha:0});
     var bitmapHelper2 = new createjs.ButtonHelper(doneButton, 'pass_out', 'pass_over', 'pass_down');    
     doneButton.addEventListener('click', () => {
-        createjs.Sound.play("click-sound");
         done();
     });
 
